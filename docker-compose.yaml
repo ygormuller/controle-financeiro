@@ -8,7 +8,8 @@ services:
       - ./symfony:/var/www/html
     working_dir: /var/www/html
     depends_on:
-      - db
+      - postgres
+      - redis
     environment:
       COMPOSER_ALLOW_SUPERUSER: 1
     networks:
@@ -26,26 +27,26 @@ services:
     networks:
       - app-network
 
-  db:
-    image: mysql:8.0
+  postgres:
+    image: postgres:15
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: symfony
-      MYSQL_USER: symfony
-      MYSQL_PASSWORD: symfony
+      POSTGRES_DB: symfony
+      POSTGRES_USER: symfony
+      POSTGRES_PASSWORD: symfony
     volumes:
-      - db_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
 
-# Exemplo de serviço adicional (descomente se quiser usar futuramente)
-#  redis:
-#    image: redis:alpine
-#    networks:
-#      - app-network
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
 
 volumes:
-  db_data:
+  postgres_data:
 
 networks:
   app-network:

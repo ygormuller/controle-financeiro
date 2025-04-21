@@ -1,52 +1,57 @@
-version: '3.8'
+version: "3.8"
 
 services:
   php:
     build:
       context: ./docker/php
+    container_name: php
     volumes:
-      - ./symfony:/var/www/html
-    working_dir: /var/www/html
+      - ./symfony:/var/www/symfony
+    working_dir: /var/www/symfony
+    ports:
+      - "8080:80"
     depends_on:
       - postgres
       - redis
-    environment:
-      COMPOSER_ALLOW_SUPERUSER: 1
     networks:
       - app-network
+    #command: symfony server:start --no-tls --allow-http --port=80 --allow-all-ips
+    command: php -S 0.0.0.0:80 -t public
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "8080:80"
-    volumes:
-      - ./symfony:/var/www/html
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - php
-    networks:
-      - app-network
 
   postgres:
     image: postgres:15
+    container_name: postgres
     environment:
       POSTGRES_DB: symfony
       POSTGRES_USER: symfony
       POSTGRES_PASSWORD: symfony
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - app-network
 
   redis:
     image: redis:alpine
+    container_name: redis
     ports:
       - "6379:6379"
     networks:
       - app-network
 
-volumes:
-  postgres_data:
+  angular:
+    container_name: angular
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+    - "4200:4200"
+    volumes:
+      - ./frontend:/usr/src/app
+    working_dir: /usr/src/app
+    command: sh -c "npm install && npm run start -- --host 0.0.0.0"
+    networks:
+      - app-network
 
 networks:
   app-network:

@@ -32,7 +32,12 @@ class MovimentacaoApiController extends AbstractController
     #[Route('', methods: ['GET'])]
     public function index(MovimentacaoRepository $repo): JsonResponse
     {
-        return $this->json($repo->findAll());
+        return $this->json(
+            $repo->findAll(),
+            200,
+            [],
+            ['groups' => 'movimentacao:read']
+        );        
     }
 
     #[Route('', methods: ['POST'])]
